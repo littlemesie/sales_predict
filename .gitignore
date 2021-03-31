@@ -131,7 +131,6 @@ runs/
 .DS_Store
 .csv
 .h5
-data/
 graphs/
 model/
 result/
