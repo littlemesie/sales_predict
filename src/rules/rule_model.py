@@ -173,14 +173,13 @@ def rule():
 sub = rule()
 # MSE
 mse = metrics.mean_squared_error(np.array(sub['salesVolume']), np.array(sub['forecastVolum']))
-print(mse)
 # RMSE
 rmse = np.sqrt(metrics.mean_squared_error(np.array(sub['salesVolume']), np.array(sub['forecastVolum'])))
-print(rmse)
 
 # mape
 mape = mape(np.array(sub['salesVolume']), np.array(sub['forecastVolum']))
-print(mape)
 # smape
 smape = smape(np.array(sub['salesVolume']), np.array(sub['forecastVolum']))
-print(smape)
+
+print('mse: {:.4f}, rmse: {:.4f}, mape: {:.4f}, smape: {:.4f}'.format(mse, rmse, mape, smape))
+"mse: 331261.2533, rmse: 575.5530, mape: 36.6696, smape: 47.8334"
