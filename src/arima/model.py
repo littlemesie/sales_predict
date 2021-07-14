@@ -9,15 +9,16 @@
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 import statsmodels.api as sm
 
 ChinaBank = pd.read_csv('../../data/ChinaBank.csv', index_col='Date', parse_dates=['Date'])
 
 # ChinaBank.index = pd.to_datetime(ChinaBank.index)
-sub = ChinaBank['2014-01':'2014-06']['Close']
+sub = ChinaBank['2014-01':'2014-07']['Close']
 # print(sub)
-train = sub['2014-01':'2014-03']
-test = sub['2014-04':'2014-06']
+train = sub['2014-01':'2014-06']
+test = sub['2014-06':'2014-07']
 # plt.figure(figsize=(10, 10))
 # print(train)
 # plt.plot(train)
@@ -56,11 +57,30 @@ ChinaBank['Close_diff_2'] = ChinaBank['Close_diff_1'].diff(1)
 # print('BIC', train_results.bic_min_order)
 
 # 模型预测
-model = sm.tsa.ARIMA(sub, order=(1, 0, 0))
-results = model.fit()
-predict_sunspots = results.predict(start=str('2014-05'), end=str('2014-06'), dynamic=False)
-print(predict_sunspots)
-fig, ax = plt.subplots(figsize=(12, 8))
-ax = sub.plot(ax=ax)
-predict_sunspots.plot(ax=ax)
+model = sm.tsa.ARIMA(train, order=(1, 0, 0)).fit()
+predict = model.predict("2014-5", '2014-6', dynamic=True)
+forecast = model.forecast(steps=3)
+print(test)
+# print(predict)
+
+print(forecast[2][:,1])
+# fig, ax = plt.subplots(figsize=(12, 8))
+# ax = sub.plot(ax=ax)
+# predict.plot(ax=ax)
+# plt.show()
+
+x = [str(d).split('T')[0] for d in test.index.values]
+
+colors = ['limegreen', 'cyan']
+labels = ['actual', 'predict']
+ax1 = plt.subplot(2, 1, 1)
+plt.xticks(rotation=20)  # 设置横坐标显示的角度，角度是逆时针，自己看
+x = [str(d).split('T')[0] for d in test.index.values]
+plt.plot(x[:3], test.values[:3], c=colors[0], label=labels[0])
+plt.plot(x[:3], forecast[2][:,1][:test.shape[0]], c=colors[1], label=labels[1])
+
+ax1.set_xticks([])
+plt.legend(loc='upper right')
+plt.xlabel('Date')
+plt.ylabel('y')
 plt.show()
