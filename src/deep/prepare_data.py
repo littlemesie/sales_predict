@@ -10,6 +10,8 @@ import math
 import warnings
 import numpy as np
 import pandas as pd
+import tensorflow as tf
+from sklearn.preprocessing import LabelEncoder
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.filterwarnings('ignore')
 
@@ -286,3 +288,68 @@ def get_stat_feature(df_, month):
                      "increase_mean_province_16_4", "increase_mean_province_14_2", "increase_mean_province_13_1"]
 
     return data, stat_feat + new_stat_feat
+
+def cate_feat(df, features):
+    """处理类别特征"""
+    feature_max_idx = {}
+    # 类id
+    for feature in features:
+        lbe = LabelEncoder()
+        df[feature] = lbe.fit_transform(df[feature].astype(str))
+        feature_max_idx[feature] = df[feature].max() + 1
+    return df, feature_max_idx
+
+def cate_embedding(df, features):
+    """类特征emdedding"""
+    # {'pro_id': 22, 'body_id': 4, 'model_id': 82, 'month_id': 12, 'jidu_id': 4, 'sales_year': 2}
+    features_embedding = None
+    len = df.shape[0]
+    for i, feature in enumerate(features):
+        if feature == 'pro_id':
+            embed = tf.random.normal([len, 4], mean=0.0, stddev=1.0, dtype=tf.float32)
+        elif feature == 'model_id':
+            embed = tf.random.normal([len, 8], mean=0.0, stddev=1.0, dtype=tf.float32)
+        else:
+            embed = tf.random.normal([len, 2], mean=0.0, stddev=1.0, dtype=tf.float32)
+
+        id_feature = df[feature].to_list()
+        feature_batch = tf.constant([id_feature])
+        embedding = tf.nn.embedding_lookup(embed, feature_batch)
+        embedding = tf.reshape(embedding, [embedding.shape[1], embedding.shape[2]])
+        if i == 0:
+            features_embedding = embedding
+        else:
+            features_embedding = tf.concat([features_embedding, embedding], axis=-1)
+
+    features_embedding = features_embedding.numpy()
+    return features_embedding
+
+# input_data = merge_data()
+# df, stat_feat = get_stat_feature(input_data, 24)
+# features = ['pro_id', 'body_id', 'model_id', 'month_id', 'jidu_id', 'sales_year']
+# tmp = df[features]
+# cate_feat_df, feature_max_idx = cate_feat(tmp, features)
+#
+# embed = cate_embedding(cate_feat_df, features)
+# col_names = ['col' + str(i) for i in range(embed.shape[1])]
+# d = pd.DataFrame(data=np.array(embed), columns=col_names)
+#
+# print(embed)
+# print(col_names)
+# print(d)
+# len = cate_feat_df.shape[0]
+# #
+# embed = tf.random.normal([len, 8], mean=0.0, stddev=1.0, dtype=tf.float32)
+# print(embed)
+# pro_id_feature = cate_feat_df['pro_id'].to_list()
+# feature_batch = tf.constant([pro_id_feature])
+# print(feature_batch)
+# get_embedding1 = tf.nn.embedding_lookup(embed, feature_batch)
+# get_embedding1 = tf.reshape(get_embedding1, [get_embedding1.shape[1], get_embedding1.shape[2]])
+# print(get_embedding1.numpy())
+# a = tf.concat([get_embedding1, get_embedding1], axis=-1)
+# print(a.shape)
+
+
+df1 = pd.DataFrame([['a', 1], ['b', 2]], columns=['letter', 'number'])
+df2 = pd.DataFrame([['c', 3], ['d', 4]], columns=['letter1', 'number1'])
